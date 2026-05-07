@@ -1,0 +1,409 @@
+
+\documentclass{article}
+
+\input{setup}
+
+\begin{document}
+
+\CAPA{Trabalho Prático 1: Jogo da Vida}{BCC202 - Estruturas de Dados 1}{Fábio Tavares Pinto e Hugo Augusto Silva de Faria}{Pedro Henrique Lopes Silva}
+
+\section{Introdução}
+
+O Jogo da Vida, criado pelo matemático John Conway em 1970, é um exemplo de autômato celular que demonstra como sistemas simples podem gerar comportamentos complexos e imprevisíveis. Este jogo é baseado em uma grade bidimensional onde cada célula pode estar viva ou morta, e o estado de cada célula é atualizado em iterações discretas com base em regras específicas.
+
+Neste trabalho, desenvolvemos um programa para simular o Jogo da Vida usando a linguagem C. O objetivo principal é criar e manipular um tabuleiro representado por uma matriz bidimensional de inteiros, onde cada célula pode assumir os valores 0 (morta) ou 1 (viva). O programa é projetado para realizar as seguintes operações:
+
+\begin{itemize}
+\item Alocação e Desalocação de Memória: Implementamos funções para alocar e liberar memória para o tabuleiro e sua matriz. Essas funções garantem que o espaço de memória seja gerido eficientemente durante a execução do programa.
+
+\item Leitura e Impressão do Tabuleiro: Desenvolvemos funções para ler o estado inicial do tabuleiro a partir da entrada padrão e para imprimir o estado do tabuleiro na tela, permitindo a visualização das células vivas e mortas em cada iteração.
+
+\item Evolução do Estado do Tabuleiro: O núcleo do programa é a implementação das regras do Jogo da Vida, que determinam como as células devem mudar de estado com base no número de vizinhos vivos. Implementamos uma função recursiva para evoluir o tabuleiro para a próxima geração e para executar um número específico de gerações. A recursividade simplifica a lógica do código, tornando-o mais intuitivo e alinhado com a natureza iterativa do Jogo da Vida.
+
+\end{itemize}
+
+Este relatório detalha a estrutura do programa, as funções implementadas e o funcionamento geral do sistema. Através da implementação deste simulador, buscamos entender melhor como sistemas complexos podem emergir a partir de regras simples e explorar a aplicação prática de autômatos celulares em computação. Além disso, o uso da recursividade na evolução do tabuleiro destaca a elegância e a eficiência de técnicas recursivas em problemas de transformação de estado.
+
+
+\section{Arquivo de Cabeçalho (automato.h)}
+
+O arquivo de cabeçalho automato.h define a interface para o módulo que implementa o Jogo da Vida. Ele contém as declarações de tipos de dados e funções que são utilizados para manipular o tabuleiro e executar as operações relacionadas ao jogo. A seguir, estão descritos os principais componentes e suas funções:
+
+\subsection{Código}
+
+
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+pragma once  // Garante que este arquivo de cabecalho sera incluido apenas uma vez no processo de compilacao
+
+typedef struct {
+    int n;            // A dimensao do tabuleiro (n x n)
+    int **matriz;     // Ponteiro para uma matriz de inteiros que representa o tabuleiro
+} Tabuleiro;
+
+// Funcao para alocar memoria para o tabuleiro e a matriz
+Tabuleiro* alocarReticulado(int n);
+
+// Funcao para desalocar a memoria do tabuleiro
+void desalocarReticulado(Tabuleiro **tab);
+
+// Funcao para ler o tabuleiro
+void LeituraReticulado(Tabuleiro *tab);
+
+// Funcao para evoluir o estado do tabuleiro para a geracao N de acordo com as regras do jogo da vida
+Tabuleiro* evoluirReticulado(Tabuleiro *tab, int n,int geracoes);
+
+// Funcao para imprimir o estado do tabuleiro na tela
+void imprimeReticulado(Tabuleiro *tab);
+ \end{lstlisting}
+
+ \subsection{Estrutura 'Tabuleiro'}
+
+A estrutura Tabuleiro é definida para representar o estado do tabuleiro do Jogo da Vida. Ela contém:
+
+\begin{itemize}
+    \item 'int n': Um inteiro que representa a dimensão do tabuleiro, sendo 'n x n'.
+    \item 'int **matriz': Um ponteiro para um ponteiro de inteiros, que representa a matriz bidimensional do tabuleiro. Cada célula da matriz pode ser 0 (morta) ou 1 (viva).
+\end{itemize}
+
+ \subsection{Funções Declaradas}
+
+ \begin{itemize}
+
+ \item Tabuleiro* alocarReticulado(int n): Esta função aloca memória para um novo tabuleiro com a dimensão n x n. Ela retorna um ponteiro para a estrutura Tabuleiro recém-alocada. Se a alocação falhar, retorna NULL.
+
+ \item void desalocarReticulado(Tabuleiro **tab):Esta função libera a memória alocada para um tabuleiro. Ela percorre cada linha da matriz, liberando a memória associada, depois libera a matriz e, finalmente, libera a estrutura Tabuleiro, garantindo que todos os recursos de memória sejam corretamente desalocados.
+
+\item void LeituraReticulado(Tabuleiro *tab): Lê o estado inicial do tabuleiro a partir da entrada padrão. Preenche a matriz do tabuleiro com os valores fornecidos, onde cada célula pode ser 0 ou 1.
+
+\item Tabuleiro* evoluirReticulado(Tabuleiro *tab, int n,int geracoes): Esta função recursiva atualiza o estado do tabuleiro para a próxima geração com base nas regras do Jogo da Vida de Conway. Ela aloca um novo tabuleiro, aplica as regras de vizinhança para cada célula, desaloca o tabuleiro antigo e chama a si mesma para as gerações restantes, retornando o tabuleiro final após todas as gerações.
+
+\item void imprimeReticulado(Tabuleiro *tab): Imprime o estado atual do tabuleiro na tela. Cada célula é exibida com um espaço entre os valores, e cada linha do tabuleiro é impressa em uma nova linha.
+
+ \end{itemize}
+
+
+\section{Arquivo de Implementação (automato.c)}
+
+O arquivo de implementação automato.c contém a definição das funções declaradas no arquivo de cabeçalho automato.h. Essas funções são responsáveis pela alocação, desalocação, manipulação e evolução do tabuleiro do Jogo da Vida. A seguir, estão descritas as principais funções e sua implementação:
+
+ \subsection{Função alocarReticulado}
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+Tabuleiro *alocarReticulado(int n)
+{
+    Tabuleiro *tab = (Tabuleiro *)malloc(sizeof(Tabuleiro));
+    if (tab == NULL)
+    {
+        printf("Erro de memoria\n");
+        return NULL;
+    }
+
+    tab->n = n;
+
+    tab->matriz = (int **)malloc(n * sizeof(int *));
+    if (tab->matriz == NULL)
+    {
+        printf("Erro de memoria\n");
+        free(tab);
+        return NULL;
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        tab->matriz[i] = (int *)malloc(n * sizeof(int));
+        if (tab->matriz[i] == NULL)
+        {
+            for (int j = 0; j < i; j++)
+            {
+                free(tab->matriz[j]);
+            }
+            free(tab->matriz);
+            free(tab);
+            printf("Erro de memoria\n");
+            return NULL;
+        }
+    }
+
+    return tab;
+}
+ \end{lstlisting}
+
+ \par A função alocarReticulado é responsável por alocar memória para o struct Tabuleiro e inicializar sua matriz. Inicialmente, a função aloca memória para o struct Tabuleiro e verifica se a alocação foi bem-sucedida. Se houver um erro na alocação, a função imprime uma mensagem de erro e retorna NULL. Em seguida, a dimensão do tabuleiro (n) é inicializada. A função então aloca memória para a matriz, que é uma matriz 2D de inteiros. Para cada linha da matriz, a função tenta alocar memória e, se houver falha em qualquer ponto, libera toda a memória já alocada e retorna NULL, imprimindo uma mensagem de erro. Finalmente, a função retorna um ponteiro para o struct Tabuleiro alocado.
+
+\subsection{Função desalocarReticulado}
+
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+void desalocarReticulado(Tabuleiro **tab)
+{
+    if (tab == NULL || *tab == NULL || (*tab)->matriz == NULL)
+    {
+        return;
+    }
+
+    for (int i = 0; i < (*tab)->n; i++)
+    {
+        free((*tab)->matriz[i]);
+    }
+
+    free((*tab)->matriz);
+    free(*tab);
+    *tab = NULL;
+}
+
+ \end{lstlisting}
+
+ \par A função desalocarReticulado cuida da liberação da memória alocada para o struct Tabuleiro e sua matriz. A função começa verificando se o ponteiro do tabuleiro ou a matriz são nulos. Se qualquer um deles for nulo, a função retorna imediatamente. Caso contrário, a função libera a memória alocada para cada linha da matriz. Após liberar todas as linhas, a função libera a memória da própria matriz e do struct Tabuleiro. Para evitar acessos posteriores a um ponteiro inválido, a função define o ponteiro do tabuleiro como NULL. Isso garante que qualquer tentativa de acesso ao tabuleiro após sua desalocação resulte em um ponteiro nulo, ajudando a prevenir erros de memória.
+
+ \subsection{Função LeituraReticulado}
+
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+void LeituraReticulado(Tabuleiro *tab)
+{
+    for (int i = 0; i < tab->n; i++)
+    {
+        for (int j = 0; j < tab->n; j++)
+        {
+            scanf("%d", &tab->matriz[i][j]);
+        }
+    }
+}
+
+
+ \end{lstlisting}
+ 
+\par A função LeituraReticulado é responsável por ler o estado inicial do tabuleiro a partir da entrada padrão. Ela percorre todas as células da matriz do tabuleiro e usa a função scanf para ler o valor de cada célula. Essa função é essencial para inicializar o tabuleiro com os valores que representam o estado inicial de cada célula (viva ou morta).
+
+
+\subsection{Função evoluirReticulado}
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+Tabuleiro *evoluirReticulado(Tabuleiro *tab, int n, int geracoes)
+{
+    // Caso base: se nao ha mais geracoes para evoluir, retorne o tabuleiro atual.
+    if (geracoes == 0)
+    {
+        return tab; // Se o numero de geracoes restantes e 0, retornamos o tabuleiro atual, que representa o estado apos todas as geracoes solicitadas.
+    }
+
+    // Evolui o tabuleiro para a proxima geracao.
+    // Cria um novo tabuleiro para armazenar o estado da proxima geracao.
+    Tabuleiro *novoTabuleiro = alocarReticulado(n);
+
+    // Verifica se a alocacao foi bem-sucedida.
+    if (novoTabuleiro == NULL)
+    {
+        return NULL; // Se a alocacao falhar, retorna NULL. Isso indica um erro na alocacao de memoria.
+    }
+
+    // Aplica as regras do Jogo da Vida para definir o proximo estado da celula (i, j).
+    // Percorre cada celula no tabuleiro atual.
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            int vizinhosVivos = 0; // Conta o numero de vizinhos vivos da celula (i, j).
+
+            // Verifica todas as celulas ao redor da celula atual (i, j), incluindo diagonais.
+            for (int di = -1; di <= 1; di++)
+            {
+                for (int dj = -1; dj <= 1; dj++)
+                {
+                    // Ignora a propria celula (i, j).
+                    if (di == 0 && dj == 0)
+                        continue;
+
+                    int ni = i + di; // Calcula a linha do vizinho.
+                    int nj = j + dj; // Calcula a coluna do vizinho.
+
+                    // Verifica se o vizinho esta dentro dos limites do tabuleiro.
+                    if (ni >= 0 && ni < n && nj >= 0 && nj < n)
+                    {
+                        // Adiciona o valor da celula vizinha ao contador de vizinhos vivos.
+                        vizinhosVivos += tab->matriz[ni][nj];
+                    }
+                }
+            }
+
+            // Aplica as regras do Jogo da Vida para atualizar o estado da celula (i, j).
+            if (tab->matriz[i][j] == 1) // Se a celula esta viva.
+            {
+                // A celula continua viva se tiver 2 ou 3 vizinhos vivos; caso contrario, morre.
+                if (vizinhosVivos == 2 || vizinhosVivos == 3)
+                    novoTabuleiro->matriz[i][j] = 1; // Continua viva.
+                else
+                    novoTabuleiro->matriz[i][j] = 0; // Morre.
+            }
+            else // Se a celula esta morta.
+            {
+                // A celula se torna viva se tiver exatamente 3 vizinhos vivos; caso contrario, permanece morta.
+                if (vizinhosVivos == 3)
+                    novoTabuleiro->matriz[i][j] = 1; // Torna-se viva.
+                else
+                    novoTabuleiro->matriz[i][j] = 0; // Permanece morta.
+            }
+        }
+    }
+
+    // Desaloca o tabuleiro antigo para liberar memoria.
+    desalocarReticulado(&tab);
+
+    // Chama a funcao recursivamente para o proximo numero de geracoes.
+    // Atualiza o tabuleiro para a nova geracao e decrementa o numero de geracoes restantes.
+    return evoluirReticulado(novoTabuleiro, n, geracoes - 1);
+}
+ \end{lstlisting}
+
+\par A função evoluirReticulado é responsável por evoluir um tabuleiro do Jogo da Vida de Conway através de múltiplas gerações. O propósito desta função é calcular o estado do tabuleiro após um número específico de gerações, utilizando recursão para alcançar o resultado desejado.
+
+\par A função recebe três parâmetros: um ponteiro para um Tabuleiro (tab), o tamanho do tabuleiro (n), e o número de gerações a serem aplicadas (geracoes). O processo inicia verificando se o número de gerações (geracoes) é igual a zero. Se for, a função retorna o tabuleiro atual sem alterações, pois não há mais gerações a serem aplicadas.
+
+\par Se ainda houver gerações a serem processadas, a função continua a execução criando um novo tabuleiro (novoTabuleiro) que armazenará o estado da próxima geração. A função alocarReticulado é utilizada para alocar memória para este novo tabuleiro. Caso a alocação falhe e novoTabuleiro seja NULL, a função retorna NULL para indicar um erro de alocação de memória.
+
+\par Com o novo tabuleiro alocado com sucesso, a função procede para aplicar as regras do Jogo da Vida de Conway. Para isso, a função itera sobre cada célula do tabuleiro atual. Para cada célula na posição (i, j), a função conta o número de vizinhos vivos. Esta contagem é feita percorrendo todas as células ao redor da célula atual, incluindo as diagonais, e somando o valor das células vizinhas.
+
+\par Após calcular o número de vizinhos vivos, a função aplica as regras do Jogo da Vida para determinar o próximo estado da célula (i, j) no novo tabuleiro. Se a célula está viva e possui 2 ou 3 vizinhos vivos, ela permanece viva; caso contrário, ela morre. Se a célula está morta e possui exatamente 3 vizinhos vivos, ela se torna viva; caso contrário, permanece morta.
+
+\par Com o novo tabuleiro atualizado, a função desaloca o tabuleiro antigo utilizando a função desalocarReticulado para liberar a memória previamente alocada. Em seguida, a função chama a si mesma recursivamente para processar a próxima geração, passando o novoTabuleiro como o tabuleiro atual e decrementando o número de gerações restantes.
+
+\par Finalmente, a função retorna o resultado da chamada recursiva, que é o tabuleiro após o número total de gerações especificado. Este retorno representa o estado final do tabuleiro após todas as gerações.
+
+\subsection{Função imprimeReticulado}
+
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+void imprimeReticulado(Tabuleiro *tab)
+{
+    printf("\n");
+
+    for (int i = 0; i < tab->n; i++)
+    {
+        for (int j = 0; j < tab->n; j++)
+        {
+            printf("%d ", tab->matriz[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+
+\end{lstlisting}
+
+\par A função imprimeReticulado imprime o estado atual do tabuleiro na tela. Ela percorre todas as células do tabuleiro e usa a função printf para imprimir o valor de cada célula, seguido por um espaço. Após imprimir todas as células de uma linha, a função imprime uma nova linha. Isso é repetido para todas as linhas do tabuleiro, resultando em uma representação visual do estado atual do tabuleiro no terminal.
+
+
+
+\section{Arquivo de Implementação (tp.c)}
+
+O arquivo de implementação tp.c contém o código principal que utiliza as funções declaradas no arquivo de cabeçalho automato.h e implementadas em automato.c. Este arquivo orquestra a execução do programa, gerencia a entrada e saída de dados, e controla a evolução do tabuleiro ao longo das gerações. A seguir, está descrito o funcionamento das principais seções e funções deste arquivo:
+
+ \subsection{Inclusão de Cabeçalhos}
+
+
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+include <stdio.h>
+include <stdlib.h>
+include "automato.h"
+
+ \end{lstlisting}
+
+\par Inclui as bibliotecas necessárias para a entrada e saída padrão e alocação de memória, além do arquivo de cabeçalho automato.h que contém as declarações das funções e definições do Tabuleiro.
+
+\subsection{Função main}
+
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+int main()
+{
+    int n, geracao;
+
+    scanf("%d %d", &n, &geracoes);
+
+ \end{lstlisting}
+
+ \par Declaração das variáveis n (dimensão do tabuleiro) e geracao (número de gerações a serem evoluídas). Utiliza scanf para ler a dimensão do tabuleiro e o número de gerações a partir da entrada padrão.
+
+\subsection{Chamadas das Funções}
+
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+Tabuleiro *tab = alocarReticulado(n);
+
+LeituraReticulado(tab);
+
+tab = evoluirReticulado(tab, n, geracoes);
+
+imprimeReticulado(tab);
+
+desalocarReticulado(&tab);
+
+\end{lstlisting}
+
+\begin{itemize}
+
+\item  Chama a função alocarReticulado para alocar memória para o tabuleiro com a dimensão especificada.
+
+\item Chama a função LeituraReticulado para ler o estado inicial do tabuleiro a partir da entrada padrão.
+
+\item Chama a função evoluirReticulado para evoluir o tabuleiro pelo número de gerações especificado. O tabuleiro evoluído substitui o original.
+
+\item Chama a função imprimeReticulado para imprimir o estado final do tabuleiro.
+
+\item Chama a função desalocarReticulado para liberar a memória alocada para o tabuleiro.
+
+\end{itemize}
+
+\subsection{Fim da Função main}
+
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+return 0;
+}
+
+ \end{lstlisting}
+
+ \par Retorna 0, indicando que o programa terminou com sucesso.
+
+\section{Impressões gerais}
+
+\par Durante a implementação deste trabalho, gostei particularmente do desafio de gerenciar a alocação e desalocação de memória, o que me permitiu aprofundar meu conhecimento sobre a manipulação de matrizes dinâmicas em C.
+\par Foi motivador ver o tabuleiro evoluir conforme as regras do Jogo da Vida, destacando a beleza de como regras simples podem resultar em comportamentos complexos. No entanto, encontrei dificuldades na depuração de erros de memória, o que foi inicialmente frustrante, mas extremamente educativo.
+\par Além disso, implementar a recursividade na função de evolução do tabuleiro foi um desafio interessante. A abordagem recursiva não só simplificou a lógica do código, mas também aprimorou meu entendimento sobre como a recursividade pode ser aplicada em algoritmos de transformação de estado.
+\par Este projeto me proporcionou um entendimento mais sólido de autômatos celulares e melhorou minhas habilidades em C, especialmente no que diz respeito ao gerenciamento eficiente de recursos e à aplicação de técnicas recursivas.
+
+\section{Análise}
+
+\par Vamos analisar o tempo de execução do código e se teve algum vazamento de memória.
+
+\subsection{Tempo de Execução}
+\par Testamos o tempo de execução da entrada do teste 20.in. O resultado obtido foi:
+
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+real    0m4.859s
+user    0m0.003s
+sys     0m0.001s
+
+ \end{lstlisting}
+
+\subsection{Valgrind}
+\par Utilizamos o Valgrind para verificar se teve algum vazamento de memória, também com a entrada do teste 20.in. O resultado obtido foi:
+
+\begin{lstlisting}[caption={},label={lst:cod1},language={[x86masm]Assembler}]
+==159134== HEAP SUMMARY:
+==159134==     in use at exit: 0 bytes in 0 blocks
+==159134==   total heap usage: 46 allocs, 46 frees, 5,600 bytes allocated
+==159134== 
+==159134== All heap blocks were freed -- no leaks are possible
+==159134== 
+==159134== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+ \end{lstlisting}
+
+
+
+
+
+\section{Conclusão}
+\par Após a implementação e execução do nosso programa, podemos concluir que o desempenho e a eficiência do código foram satisfatórios. Utilizamos o comando time para medir o tempo de execução do nosso programa e observamos que o tempo de execução foi excelente, evidenciando a eficiência das funções implementadas.
+
+\par Além disso, utilizamos a ferramenta valgrind para verificar possíveis vazamentos de memória durante a execução do programa. Os resultados mostraram que não houve vazamentos de memória, indicando que a alocação e desalocação de memória foram realizadas corretamente em todas as funções do código.
+
+\par O programa cumpriu com sucesso todos os requisitos propostos, evoluindo corretamente o estado do tabuleiro conforme as regras do Jogo da Vida de Conway. A impressão do tabuleiro nas diversas gerações também foi realizada conforme esperado, proporcionando uma visualização clara da evolução das células ao longo do tempo. A implementação da recursividade na função de evolução do tabuleiro também se mostrou eficaz, simplificando a lógica do código e demonstrando a aplicabilidade de técnicas recursivas em algoritmos de transformação de estado.
+
+\par Em resumo, o projeto alcançou seus objetivos com um código eficiente e sem problemas de memória, demonstrando um bom entendimento e aplicação das técnicas de alocação dinâmica de memória, manipulação de matrizes e recursividade em C. O resultado final foi obtido com sucesso, validando a eficácia das soluções implementadas.
+
+
+\end{document}

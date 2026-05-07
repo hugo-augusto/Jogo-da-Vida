@@ -1,0 +1,7 @@
+Para compilar e executar no terminal utilize:
+
+gcc -g -o exe *.c -Wall
+valgrind --leak-check=full -s ./exe
+
+gcc -g -o exe pgr2.c -Wall
+gcc -g -o exe pgr1.c -Wall
